@@ -18,6 +18,8 @@
   const currentLook = {}; // key -> item
 
   let currentUserId = null;
+  let currentUserEmail = null;
+  let currentUserIsAnonymous = true;
   let pendingCategory = null;      // category preset when opening add-item from a specific accordion/slot
   let addItemReturnTo = 'closet';  // where to go back after saving a new item
   let currentImageData = null;     // data URL of the photo just captured
@@ -36,6 +38,7 @@
     if (name === 'armario') renderCloset();
     if (name === 'criar-look') renderLookLayout();
     if (name === 'looks') renderLooks();
+    if (name === 'account') renderAccount();
   }
 
   document.querySelectorAll('[data-goto]').forEach(el => {
@@ -47,7 +50,7 @@
   async function ensureSession() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
-      currentUserId = session.user.id;
+      applySession(session);
       return;
     }
     // No session yet on this device/browser — create an anonymous one.
@@ -58,7 +61,13 @@
       alert('Could not connect to your account. Check your connection and reload.');
       return;
     }
-    currentUserId = data.user.id;
+    applySession(data.session);
+  }
+
+  function applySession(session) {
+    currentUserId = session.user.id;
+    currentUserEmail = session.user.email || null;
+    currentUserIsAnonymous = !!session.user.is_anonymous;
   }
 
   function dataURLtoBlob(dataUrl) {
@@ -510,6 +519,120 @@
     });
     body.innerHTML = '';
     body.appendChild(grid);
+  }
+
+  /* ---------------- ACCOUNT ---------------- */
+  function renderAccount() {
+    const body = document.getElementById('account-body');
+
+    if (!currentUserIsAnonymous && currentUserEmail) {
+      body.innerHTML = `
+        <div class="account-status">
+          <div class="icon">✅</div>
+          <div>
+            <div class="email">${currentUserEmail}</div>
+            <div class="tag">Signed in — your closet is saved to this account</div>
+          </div>
+        </div>
+      `;
+      const logoutBtn = document.createElement('div');
+      logoutBtn.className = 'btn';
+      logoutBtn.textContent = 'Log out';
+      logoutBtn.addEventListener('click', handleLogout);
+      body.appendChild(logoutBtn);
+      return;
+    }
+
+    body.innerHTML = `
+      <p class="account-copy">Your closet is currently only saved on this device. Add an email and password to keep it safe and reach it from other devices.</p>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="account-email" placeholder="you@example.com">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="account-password" placeholder="At least 6 characters">
+      </div>
+      <p class="account-message" id="account-message"></p>
+    `;
+
+    const createBtn = document.createElement('div');
+    createBtn.className = 'btn primary';
+    createBtn.textContent = 'Create account';
+    createBtn.addEventListener('click', handleCreateAccount);
+    body.appendChild(createBtn);
+
+    const loginLink = document.createElement('div');
+    loginLink.className = 'account-link';
+    loginLink.style.marginTop = '18px';
+    loginLink.textContent = 'Already have an account? Log in';
+    loginLink.addEventListener('click', () => showScreen('login'));
+    body.appendChild(loginLink);
+  }
+
+  async function handleCreateAccount() {
+    const email = document.getElementById('account-email').value.trim();
+    const password = document.getElementById('account-password').value;
+    const msg = document.getElementById('account-message');
+    msg.textContent = '';
+    msg.classList.remove('error');
+
+    if (!email || password.length < 6) {
+      msg.textContent = 'Enter an email and a password with at least 6 characters.';
+      msg.classList.add('error');
+      return;
+    }
+
+    const { error } = await supabaseClient.auth.updateUser({ email, password });
+    if (error) {
+      msg.textContent = error.message;
+      msg.classList.add('error');
+      return;
+    }
+
+    msg.classList.remove('error');
+    msg.textContent = 'Check your email to confirm the address, then you can log in from any device.';
+  }
+
+  document.getElementById('login-back').addEventListener('click', () => showScreen('account'));
+
+  document.getElementById('login-submit').addEventListener('click', async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const msg = document.getElementById('login-message');
+    msg.textContent = '';
+    msg.classList.remove('error');
+
+    if (!email || !password) {
+      msg.textContent = 'Enter your email and password.';
+      msg.classList.add('error');
+      return;
+    }
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) {
+      msg.textContent = error.message;
+      msg.classList.add('error');
+      return;
+    }
+
+    applySession(data.session);
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-password').value = '';
+    await Promise.all([fetchWardrobe(), fetchLooks()]);
+    showScreen('home');
+  });
+
+  async function handleLogout() {
+    await supabaseClient.auth.signOut();
+    currentUserEmail = null;
+    currentUserIsAnonymous = true;
+    Object.keys(currentLook).forEach(k => delete currentLook[k]);
+    CATEGORIES.forEach(c => { wardrobe[c.key] = []; });
+    savedLooks = [];
+    await ensureSession(); // starts a fresh anonymous session
+    await Promise.all([fetchWardrobe(), fetchLooks()]);
+    showScreen('home');
   }
 
   /* ---------------- INIT ---------------- */
