@@ -27,7 +27,8 @@
   let currentUserIsAnonymous = true;
   let pendingCategory = null;      // category preset when opening add-item from a specific accordion/slot
   let addItemReturnTo = 'closet';  // where to go back after saving a new item
-  let currentImageData = null;     // data URL of the photo just captured
+  let currentPhotoBlob = null;     // background-removed photo, ready to upload
+  let currentPhotoPreviewUrl = null; // object URL for on-screen preview
 
   let pickerSlotKey = null;
   let pickerSelection = null;
@@ -75,21 +76,19 @@
     currentUserIsAnonymous = !!session.user.is_anonymous;
   }
 
-  function dataURLtoBlob(dataUrl) {
-    const [header, base64] = dataUrl.split(',');
-    const mime = header.match(/:(.*?);/)[1];
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return new Blob([bytes], { type: mime });
+  let _bgRemovalModule = null;
+  async function loadBackgroundRemoval() {
+    if (_bgRemovalModule) return _bgRemovalModule;
+    const mod = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm');
+    _bgRemovalModule = { removeBackground: mod.removeBackground || mod.default };
+    return _bgRemovalModule;
   }
 
-  async function uploadPhoto(dataUrl) {
-    const blob = dataURLtoBlob(dataUrl);
-    const ext = blob.type.split('/')[1] || 'png';
+  async function uploadPhoto(blob) {
+    const ext = (blob.type && blob.type.split('/')[1]) || 'png';
     const path = `${currentUserId}/${crypto.randomUUID()}.${ext}`;
     const { error } = await supabaseClient.storage.from(BUCKET).upload(path, blob, {
-      contentType: blob.type,
+      contentType: blob.type || 'image/png',
     });
     if (error) throw error;
     return path; // stored in items.image_url
@@ -370,20 +369,43 @@
   document.getElementById('file-camera').addEventListener('change', (e) => handleFile(e.target.files[0]));
   document.getElementById('file-gallery').addEventListener('change', (e) => handleFile(e.target.files[0]));
 
-  function handleFile(file) {
+  async function handleFile(file) {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      currentImageData = e.target.result;
-      document.getElementById('processing-img').src = currentImageData;
-      showScreen('processing');
-      setTimeout(() => {
-        document.getElementById('form-img').src = currentImageData;
-        buildCategoryChips();
-        showScreen('form');
-      }, 1300);
-    };
-    reader.readAsDataURL(file);
+
+    const originalUrl = URL.createObjectURL(file);
+    document.getElementById('processing-img').src = originalUrl;
+    setProcessingLabel('Loading the background remover', 'first time only, a few seconds');
+    showScreen('processing');
+
+    try {
+      const { removeBackground } = await loadBackgroundRemoval();
+      const resultBlob = await removeBackground(file, {
+        progress: (key, current, total) => {
+          if (key && key.startsWith('fetch')) {
+            setProcessingLabel('Downloading the AI model', 'first time only — happens once per device');
+          } else {
+            setProcessingLabel('Removing the background', 'isolating the item automatically');
+          }
+        },
+      });
+      currentPhotoBlob = resultBlob;
+      currentPhotoPreviewUrl = URL.createObjectURL(resultBlob);
+      document.getElementById('form-img').src = currentPhotoPreviewUrl;
+      buildCategoryChips();
+      showScreen('form');
+    } catch (err) {
+      console.error('Background removal failed, using original photo:', err.message);
+      currentPhotoBlob = file;
+      currentPhotoPreviewUrl = originalUrl;
+      document.getElementById('form-img').src = originalUrl;
+      buildCategoryChips();
+      showScreen('form');
+    }
+  }
+
+  function setProcessingLabel(title, sub) {
+    const el = document.querySelector('.processing-label');
+    if (el) el.innerHTML = `<b>${title}</b><br>${sub}`;
   }
 
   function buildCategoryChips() {
@@ -436,7 +458,7 @@
     saveBtn.style.pointerEvents = 'none';
 
     try {
-      const storagePath = await uploadPhoto(currentImageData);
+      const storagePath = await uploadPhoto(currentPhotoBlob);
 
       const { data: newRow, error } = await supabaseClient
         .from('items')
@@ -459,7 +481,7 @@
         color: newRow.color,
         style: newRow.style,
         storagePath,
-        imgSrc: urlMap[storagePath] || currentImageData,
+        imgSrc: urlMap[storagePath] || currentPhotoPreviewUrl,
       };
       wardrobe[categoryKey].push(newItem);
 

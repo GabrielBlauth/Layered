@@ -52,7 +52,7 @@ Tops · Bottoms · Shoes · Outerwear · Headwear (hats/caps) · Accessories (wa
 ## Roadmap
 
 - [x] Real persistence (Supabase: item and outfit tables, image storage)
-- [ ] Real background removal (`@imgly/background-removal`, runs in the browser)
+- [x] Real background removal (`@imgly/background-removal`, runs in the browser)
 - [ ] Outfit suggestion engine (LLM receives closet metadata, returns combinations)
 - [ ] Email/password login (upgrade from anonymous sessions)
 - [ ] Edit item / edit saved outfit
