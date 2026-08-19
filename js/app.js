@@ -9,15 +9,18 @@
   ];
   const catMap = Object.fromEntries(CATEGORIES.map(c => [c.key, c]));
 
+  const BUCKET = 'closet-photos';
+  const SIGNED_URL_EXPIRY = 60 * 60 * 24 * 7; // 7 days
+
   /* ---------------- state ---------------- */
   const wardrobe = Object.fromEntries(CATEGORIES.map(c => [c.key, []]));
-  const savedLooks = [];
+  let savedLooks = [];
   const currentLook = {}; // key -> item
 
-  let itemIdSeq = 1;
+  let currentUserId = null;
   let pendingCategory = null;      // category preset when opening add-item from a specific accordion/slot
   let addItemReturnTo = 'closet';  // where to go back after saving a new item
-  let currentImageData = null;
+  let currentImageData = null;     // data URL of the photo just captured
 
   let pickerSlotKey = null;
   let pickerSelection = null;
@@ -38,6 +41,118 @@
   document.querySelectorAll('[data-goto]').forEach(el => {
     el.addEventListener('click', () => showScreen(el.dataset.goto));
   });
+
+  /* ---------------- SUPABASE HELPERS ---------------- */
+
+  async function ensureSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+      currentUserId = session.user.id;
+      return;
+    }
+    // No session yet on this device/browser — create an anonymous one.
+    // This gives a stable user_id without requiring a login screen.
+    const { data, error } = await supabaseClient.auth.signInAnonymously();
+    if (error) {
+      console.error('Anonymous sign-in failed:', error.message);
+      alert('Could not connect to your account. Check your connection and reload.');
+      return;
+    }
+    currentUserId = data.user.id;
+  }
+
+  function dataURLtoBlob(dataUrl) {
+    const [header, base64] = dataUrl.split(',');
+    const mime = header.match(/:(.*?);/)[1];
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+  }
+
+  async function uploadPhoto(dataUrl) {
+    const blob = dataURLtoBlob(dataUrl);
+    const ext = blob.type.split('/')[1] || 'png';
+    const path = `${currentUserId}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabaseClient.storage.from(BUCKET).upload(path, blob, {
+      contentType: blob.type,
+    });
+    if (error) throw error;
+    return path; // stored in items.image_url
+  }
+
+  async function getSignedUrls(paths) {
+    if (paths.length === 0) return {};
+    const { data, error } = await supabaseClient.storage
+      .from(BUCKET)
+      .createSignedUrls(paths, SIGNED_URL_EXPIRY);
+    if (error) {
+      console.error('Could not sign image URLs:', error.message);
+      return {};
+    }
+    const map = {};
+    data.forEach(d => { if (d.signedUrl) map[d.path] = d.signedUrl; });
+    return map;
+  }
+
+  async function fetchWardrobe() {
+    const { data, error } = await supabaseClient
+      .from('items')
+      .select('*')
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Could not load closet:', error.message);
+      return;
+    }
+
+    CATEGORIES.forEach(c => { wardrobe[c.key] = []; });
+
+    const urlMap = await getSignedUrls(data.map(it => it.image_url));
+
+    data.forEach(row => {
+      wardrobe[row.category].push({
+        id: row.id,
+        name: row.name,
+        color: row.color,
+        style: row.style,
+        storagePath: row.image_url,
+        imgSrc: urlMap[row.image_url] || '',
+      });
+    });
+  }
+
+  async function fetchLooks() {
+    const { data, error } = await supabaseClient
+      .from('outfits')
+      .select('id, name, created_at, outfit_items ( category, items ( id, name, image_url ) )')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Could not load outfits:', error.message);
+      return;
+    }
+
+    const allPaths = [];
+    data.forEach(outfit => {
+      outfit.outfit_items.forEach(oi => { if (oi.items) allPaths.push(oi.items.image_url); });
+    });
+    const urlMap = await getSignedUrls(allPaths);
+
+    savedLooks = data.map(outfit => {
+      const items = {};
+      outfit.outfit_items.forEach(oi => {
+        if (oi.items) {
+          items[oi.category] = {
+            id: oi.items.id,
+            name: oi.items.name,
+            imgSrc: urlMap[oi.items.image_url] || '',
+          };
+        }
+      });
+      return { id: outfit.id, name: outfit.name, items };
+    });
+  }
 
   /* ---------------- HOME ---------------- */
   function renderHome() {
@@ -116,16 +231,39 @@
     renderLookLayout();
   });
 
-  document.getElementById('look-save').addEventListener('click', () => {
-    const chosen = Object.values(currentLook);
+  document.getElementById('look-save').addEventListener('click', async () => {
+    const chosen = Object.entries(currentLook);
     if (chosen.length === 0) return;
-    savedLooks.unshift({
-      id: itemIdSeq++,
-      name: `Outfit ${savedLooks.length + 1}`,
-      items: { ...currentLook },
-    });
-    Object.keys(currentLook).forEach(k => delete currentLook[k]);
-    showScreen('looks');
+
+    const saveBtn = document.getElementById('look-save');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = 'Saving…';
+
+    try {
+      const { data: outfit, error: outfitError } = await supabaseClient
+        .from('outfits')
+        .insert({ user_id: currentUserId, name: `Outfit ${savedLooks.length + 1}` })
+        .select()
+        .single();
+      if (outfitError) throw outfitError;
+
+      const rows = chosen.map(([category, item]) => ({
+        outfit_id: outfit.id,
+        item_id: item.id,
+        category,
+      }));
+      const { error: itemsError } = await supabaseClient.from('outfit_items').insert(rows);
+      if (itemsError) throw itemsError;
+
+      Object.keys(currentLook).forEach(k => delete currentLook[k]);
+      await fetchLooks();
+      showScreen('looks');
+    } catch (err) {
+      console.error('Could not save outfit:', err.message);
+      alert('Could not save this outfit. Please try again.');
+    } finally {
+      saveBtn.textContent = originalText;
+    }
   });
 
   /* ---------------- PICKER ---------------- */
@@ -272,33 +410,68 @@
     showScreen(addItemReturnTo === 'picker' ? 'criar-look' : 'armario');
   }
 
-  document.getElementById('form-save').addEventListener('click', () => {
+  document.getElementById('form-save').addEventListener('click', async () => {
     const name = document.getElementById('field-name').value || catMap[pendingCategory || 'top'].label;
     const categoryKey = pendingCategory || document.querySelector('#chip-category .selected')?.dataset.value || 'top';
-    const color = document.querySelector('#chip-color .selected')?.dataset.value || '—';
-    const style = document.querySelector('#chip-style .selected')?.dataset.value || '—';
+    const color = document.querySelector('#chip-color .selected')?.dataset.value || null;
+    const style = document.querySelector('#chip-style .selected')?.dataset.value || null;
 
-    const newItem = { id: itemIdSeq++, imgSrc: currentImageData, name, color, style };
-    wardrobe[categoryKey].push(newItem);
+    const saveBtn = document.getElementById('form-save');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = 'Saving…';
+    saveBtn.style.pointerEvents = 'none';
 
-    document.getElementById('field-name').value = '';
-    document.querySelectorAll('#chip-color .selected, #chip-style .selected').forEach(c => c.classList.remove('selected'));
+    try {
+      const storagePath = await uploadPhoto(currentImageData);
 
-    const returnTo = addItemReturnTo;
-    const wasForPicker = returnTo === 'picker';
-    const slotKeyForPicker = pendingCategory;
-    pendingCategory = null;
+      const { data: newRow, error } = await supabaseClient
+        .from('items')
+        .insert({
+          user_id: currentUserId,
+          name,
+          category: categoryKey,
+          color,
+          style,
+          image_url: storagePath,
+        })
+        .select()
+        .single();
+      if (error) throw error;
 
-    if (wasForPicker && slotKeyForPicker) {
-      showScreen('criar-look');
-      openPicker(slotKeyForPicker);
-      pickerSelection = newItem.id;
-      openPicker(slotKeyForPicker); // re-render with new item selected
-    } else {
-      showScreen('armario');
-      const idx = CATEGORIES.findIndex(c => c.key === categoryKey);
-      const accItems = document.querySelectorAll('.acc-item');
-      if (accItems[idx]) accItems[idx].classList.add('open');
+      const urlMap = await getSignedUrls([storagePath]);
+      const newItem = {
+        id: newRow.id,
+        name: newRow.name,
+        color: newRow.color,
+        style: newRow.style,
+        storagePath,
+        imgSrc: urlMap[storagePath] || currentImageData,
+      };
+      wardrobe[categoryKey].push(newItem);
+
+      document.getElementById('field-name').value = '';
+      document.querySelectorAll('#chip-color .selected, #chip-style .selected').forEach(c => c.classList.remove('selected'));
+
+      const returnTo = addItemReturnTo;
+      const wasForPicker = returnTo === 'picker';
+      const slotKeyForPicker = pendingCategory;
+      pendingCategory = null;
+
+      if (wasForPicker && slotKeyForPicker) {
+        pickerSelection = newItem.id;
+        openPicker(slotKeyForPicker);
+      } else {
+        showScreen('armario');
+        const idx = CATEGORIES.findIndex(c => c.key === categoryKey);
+        const accItems = document.querySelectorAll('.acc-item');
+        if (accItems[idx]) accItems[idx].classList.add('open');
+      }
+    } catch (err) {
+      console.error('Could not save item:', err.message);
+      alert('Could not save this item. Please try again.');
+    } finally {
+      saveBtn.textContent = originalText;
+      saveBtn.style.pointerEvents = '';
     }
   });
 
@@ -339,4 +512,12 @@
     body.appendChild(grid);
   }
 
-  renderHome();
+  /* ---------------- INIT ---------------- */
+  async function init() {
+    await ensureSession();
+    if (!currentUserId) return; // sign-in failed, error already shown
+    await Promise.all([fetchWardrobe(), fetchLooks()]);
+    renderHome();
+  }
+
+  init();

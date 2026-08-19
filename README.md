@@ -4,31 +4,37 @@ A digital closet app: photograph your clothes, and the app builds outfits from w
 
 ## Current status
 
-🚧 UI prototype (front-end only, no persistence yet). Full navigable flow:
+✅ Connected to Supabase — items and outfits persist for real. Full navigable flow:
 
 - **Home** — My Outfits / Create Outfit / Closet
 - **Closet** — catalog by category (expandable accordion), add items by photo
 - **Create Outfit** — grid of 6 categories, pick real items from your closet to build an outfit
 - **My Outfits** — saved outfits with a thumbnail preview
 
+Each browser/device currently gets an **anonymous Supabase session** on first load (no login screen yet) — this already gives every user their own private, persistent closet under the hood. Email/password login (matching the Last Frequency approach) is a planned upgrade; anonymous sessions can be linked to a real account later without losing data.
+
 ## Stack
 
 - Vanilla JS / HTML / CSS (no framework, no build step)
 - PWA (`manifest.json`) — installable on mobile
 - Hosting: GitHub Pages
-- Next up: Supabase (auth + storage + database), `@imgly/background-removal` (local background removal via WASM), an LLM-based outfit suggestion engine
+- Backend: Supabase (Postgres database with Row Level Security, Auth, Storage)
+- Next up: email/password login, `@imgly/background-removal` (local background removal via WASM), an LLM-based outfit suggestion engine
 
 ## Structure
 
 ```
 layered/
-├── index.html          # markup for every screen
+├── index.html               # markup for every screen
 ├── css/
-│   └── style.css        # design system + all screen styles
+│   └── style.css             # design system + all screen styles
 ├── js/
-│   └── app.js            # screen navigation + app state
-├── manifest.json         # PWA config
-└── assets/               # icons, static images
+│   ├── supabase-client.js     # Supabase project connection
+│   └── app.js                 # screen navigation + app state + data calls
+├── supabase/
+│   └── schema.sql              # tables, RLS policies, storage bucket setup
+├── manifest.json              # PWA config
+└── assets/                    # icons, static images
 ```
 
 ## Running locally
@@ -45,9 +51,9 @@ Tops · Bottoms · Shoes · Outerwear · Headwear (hats/caps) · Accessories (wa
 
 ## Roadmap
 
-- [ ] Real persistence (Supabase: item and outfit tables, image storage)
+- [x] Real persistence (Supabase: item and outfit tables, image storage)
 - [ ] Real background removal (`@imgly/background-removal`, runs in the browser)
 - [ ] Outfit suggestion engine (LLM receives closet metadata, returns combinations)
-- [ ] User authentication
+- [ ] Email/password login (upgrade from anonymous sessions)
 - [ ] Edit item / edit saved outfit
 - [ ] Filter by season/weather
