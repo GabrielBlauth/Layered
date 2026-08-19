@@ -4,19 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Layered</title>
-<meta name="theme-color" content="#FF5C6C">
+<meta name="theme-color" content="#F7F3F2">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="css/style.css?v=3">
+<link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
 
   <!-- ============ HOME ============ -->
   <div id="screen-home" class="screen active">
+    <img class="hero-icon" src="assets/icon-512.png" alt="Layered">
     <div class="home-eyebrow">Welcome back</div>
     <h1>Layered</h1>
     <div class="home-menu">
       <div class="home-btn hero" data-goto="looks">
-        <div class="icon">✨</div>
+        <div class="icon-badge badge-orange">
+          <svg viewBox="0 0 24 24"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg>
+        </div>
         <div>
           <div class="label">My Outfits</div>
           <div class="sub" id="looks-count-sub">No outfits saved yet</div>
@@ -24,7 +29,14 @@
         <div class="arrow">→</div>
       </div>
       <div class="home-btn" data-goto="criar-look">
-        <div class="icon">🪄</div>
+        <div class="icon-badge badge-purple">
+          <svg viewBox="0 0 24 24">
+            <path d="M4.5 19.5 L14 10" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <path d="M17 2.5 L18 5.5 L21 6.5 L18 7.5 L17 10.5 L16 7.5 L13 6.5 L16 5.5 Z"/>
+            <circle cx="21" cy="13" r="1.1"/>
+            <circle cx="7" cy="4.5" r="1"/>
+          </svg>
+        </div>
         <div>
           <div class="label">Create Outfit</div>
           <div class="sub">Put together a new combination</div>
@@ -32,7 +44,14 @@
         <div class="arrow">→</div>
       </div>
       <div class="home-btn" data-goto="armario">
-        <div class="icon">🗄️</div>
+        <div class="icon-badge badge-indigo">
+          <svg viewBox="0 0 24 24">
+            <rect x="4" y="3" width="16" height="18" rx="1.5" fill="none" stroke="#fff" stroke-width="1.7"/>
+            <line x1="12" y1="3" x2="12" y2="21" stroke="#fff" stroke-width="1.7"/>
+            <circle cx="10" cy="12" r="0.9" fill="#fff"/>
+            <circle cx="14" cy="12" r="0.9" fill="#fff"/>
+          </svg>
+        </div>
         <div>
           <div class="label">Closet</div>
           <div class="sub" id="armario-count-sub">No items added yet</div>
