@@ -128,6 +128,46 @@
   .home-btn.hero .label, .home-btn.hero .arrow { color: #1c1c1e; }
   .home-btn.hero .sub { color: rgba(28,28,30,0.65); }
 
+  .account-link {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    letter-spacing: 0.02em;
+  }
+  .account-link:active { color: var(--text); }
+
+  .account-copy {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 22px;
+  }
+
+  .account-message {
+    font-size: 12.5px;
+    color: var(--accent);
+    line-height: 1.5;
+    min-height: 1px;
+  }
+  .account-message.error { color: #d97757; }
+
+  .account-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    margin-bottom: 22px;
+  }
+  .account-status .icon { font-size: 22px; }
+  .account-status .email { font-size: 14px; font-weight: 600; }
+  .account-status .tag { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
   /* ================= ARMÁRIO (accordion) ================= */
 
   .accordion {
