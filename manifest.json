@@ -4,8 +4,8 @@
   "description": "Build outfits from the clothes you already own.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#1c1c1e",
-  "theme_color": "#1c1c1e",
+  "background_color": "#FF5C6C",
+  "theme_color": "#FF5C6C",
   "orientation": "portrait",
   "icons": [
     {
