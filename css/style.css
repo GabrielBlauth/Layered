@@ -76,7 +76,7 @@
     color: var(--text);
     cursor: pointer;
   }
-  .btn.primary { background: var(--accent); color: var(--accent-text); border: none; }
+  .btn.primary { background: var(--panel); color: var(--accent); border: 2px solid var(--accent); }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .actions { display: flex; gap: 10px; margin-top: 14px; }
   .actions .btn { flex: 1; }
@@ -89,10 +89,21 @@
     display: flex; align-items: center; justify-content: center;
   }
   .icon-badge svg { width: 20px; height: 20px; fill: #fff; }
+  .icon-badge-sm { width: 34px; height: 34px; min-width: 34px; }
+  .icon-badge-sm svg { width: 17px; height: 17px; }
+
+  .icon-img {
+    width: 42px; height: 42px; min-width: 42px;
+  }
+
+  .empty-state .icon-badge { margin: 0 auto 12px; }
 
   .badge-orange { background: #FF9F55; }
   .badge-purple { background: #8E7CF0; }
   .badge-indigo { background: #4B3F72; }
+  .badge-coral  { background: #FF5C6C; }
+  .badge-teal   { background: #4FA98C; }
+  .badge-gold   { background: #E0A339; }
 
   /* ================= HOME ================= */
 

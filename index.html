@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="css/style.css?v=4">
+<link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
 
@@ -19,9 +19,7 @@
     <h1>Layered</h1>
     <div class="home-menu">
       <div class="home-btn hero" data-goto="looks">
-        <div class="icon-badge badge-orange">
-          <svg viewBox="0 0 24 24"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></svg>
-        </div>
+        <img class="icon-img" src="assets/icon-my-outfits.png" alt="My Outfits">
         <div>
           <div class="label">My Outfits</div>
           <div class="sub" id="looks-count-sub">No outfits saved yet</div>
@@ -29,14 +27,7 @@
         <div class="arrow">→</div>
       </div>
       <div class="home-btn" data-goto="criar-look">
-        <div class="icon-badge badge-purple">
-          <svg viewBox="0 0 24 24">
-            <path d="M4.5 19.5 L14 10" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/>
-            <path d="M17 2.5 L18 5.5 L21 6.5 L18 7.5 L17 10.5 L16 7.5 L13 6.5 L16 5.5 Z"/>
-            <circle cx="21" cy="13" r="1.1"/>
-            <circle cx="7" cy="4.5" r="1"/>
-          </svg>
-        </div>
+        <img class="icon-img" src="assets/icon-create-outfit.png" alt="Create Outfit">
         <div>
           <div class="label">Create Outfit</div>
           <div class="sub">Put together a new combination</div>
@@ -44,14 +35,7 @@
         <div class="arrow">→</div>
       </div>
       <div class="home-btn" data-goto="armario">
-        <div class="icon-badge badge-indigo">
-          <svg viewBox="0 0 24 24">
-            <rect x="4" y="3" width="16" height="18" rx="1.5" fill="none" stroke="#fff" stroke-width="1.7"/>
-            <line x1="12" y1="3" x2="12" y2="21" stroke="#fff" stroke-width="1.7"/>
-            <circle cx="10" cy="12" r="0.9" fill="#fff"/>
-            <circle cx="14" cy="12" r="0.9" fill="#fff"/>
-          </svg>
-        </div>
+        <img class="icon-img" src="assets/icon-closet.png" alt="Closet">
         <div>
           <div class="label">Closet</div>
           <div class="sub" id="armario-count-sub">No items added yet</div>
@@ -99,18 +83,36 @@
 
   <!-- ============ ADD ITEM: capture choice ============ -->
   <div id="screen-capture" class="screen">
-    <div class="capture-icon">📷</div>
+    <div class="icon-badge badge-coral" style="width:64px;height:64px;margin:0 auto 18px;">
+      <svg viewBox="0 0 24 24" style="width:30px;height:30px;">
+        <rect x="3" y="7" width="18" height="13" rx="2"/>
+        <path d="M9 7 L10 4 H14 L15 7 Z"/>
+        <circle cx="12" cy="13.5" r="4" fill="var(--panel)"/>
+      </svg>
+    </div>
     <h1>Add item</h1>
     <p id="capture-subtitle">Photograph the item on a hanger, on the floor,<br>or on a table — we'll handle the rest.</p>
     <div class="capture-options">
       <label class="capture-btn primary" for="file-camera">
-        <div class="icon">📸</div>
+        <div class="icon-badge badge-coral">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="7" width="18" height="13" rx="2"/>
+            <path d="M9 7 L10 4 H14 L15 7 Z"/>
+            <circle cx="12" cy="13.5" r="4" fill="#FF5C6C"/>
+          </svg>
+        </div>
         <div><div class="label">Take a photo</div><div class="sub">Use the device camera</div></div>
       </label>
       <input type="file" id="file-camera" accept="image/*" capture="environment">
 
       <label class="capture-btn" for="file-gallery">
-        <div class="icon">🖼️</div>
+        <div class="icon-badge badge-indigo">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="#fff" stroke-width="1.6"/>
+            <circle cx="8.5" cy="9.5" r="1.8"/>
+            <path d="M4 18 L9 12 L13 16 L16 13 L20 18 Z"/>
+          </svg>
+        </div>
         <div><div class="label">Choose from gallery</div><div class="sub">Use an existing photo</div></div>
       </label>
       <input type="file" id="file-gallery" accept="image/*">
