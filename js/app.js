@@ -1,11 +1,11 @@
 /* ---------------- categories ---------------- */
   const CATEGORIES = [
-    { key: 'top',       label: 'Tops',        badge: 'badge-coral',  svg: '<path d="M6 4 L9 2 L12 4 L15 2 L18 4 L21 7 L18 9 L18 21 L6 21 L6 9 L3 7 Z"/>' },
-    { key: 'bottom',    label: 'Bottoms',     badge: 'badge-indigo', svg: '<path d="M6 3 H18 V7 L15.5 21 H13 L12 10 L11 21 H8.5 L6 7 Z"/>' },
-    { key: 'shoes',     label: 'Shoes',       badge: 'badge-teal',   svg: '<path d="M2 17 Q2 14 6 13 L10 11 Q12 9 15 9 L21 9 Q22 9 22 11 L22 15 Q22 17 20 17 Z"/>' },
-    { key: 'jacket',    label: 'Outerwear',   badge: 'badge-purple', svg: '<path d="M6 4 L9 2 L12 4 L15 2 L18 4 L21 7 L18 9 L18 21 L6 21 L6 9 L3 7 Z"/><line x1="12" y1="4" x2="12" y2="21" stroke="#fff" stroke-width="1.4"/>' },
-    { key: 'head',      label: 'Headwear',    badge: 'badge-orange', svg: '<path d="M4 14 Q4 6 12 6 Q20 6 20 14 Z"/><path d="M2 14 Q12 17.5 22 14 L22 15.6 Q12 19 2 15.6 Z"/>' },
-    { key: 'accessory', label: 'Accessories', badge: 'badge-gold',   svg: '<circle cx="12" cy="12" r="5.2" fill="none" stroke="#fff" stroke-width="1.6"/><rect x="10" y="1.5" width="4" height="4" rx="0.6"/><rect x="10" y="18.5" width="4" height="4" rx="0.6"/>' },
+    { key: 'top',       label: 'Tops',        badge: 'badge-coral', svg: '<path d="M6 4 L9 2 L12 4 L15 2 L18 4 L21 7 L18 9 L18 21 L6 21 L6 9 L3 7 Z"/>' },
+    { key: 'bottom',    label: 'Bottoms',     badge: 'badge-coral', svg: '<path d="M6 3 H18 V7 L15.5 21 H13 L12 10 L11 21 H8.5 L6 7 Z"/>' },
+    { key: 'shoes',     label: 'Shoes',       badge: 'badge-coral', svg: '<path d="M2 17 Q2 14 6 13 L10 11 Q12 9 15 9 L21 9 Q22 9 22 11 L22 15 Q22 17 20 17 Z"/>' },
+    { key: 'jacket',    label: 'Outerwear',   badge: 'badge-coral', svg: '<path d="M6 4 L9 2 L12 4 L15 2 L18 4 L21 7 L18 9 L18 21 L6 21 L6 9 L3 7 Z"/><line x1="12" y1="4" x2="12" y2="21" stroke="#fff" stroke-width="1.4"/>' },
+    { key: 'head',      label: 'Headwear',    badge: 'badge-coral', svg: '<path d="M4 14 Q4 6 12 6 Q20 6 20 14 Z"/><path d="M2 14 Q12 17.5 22 14 L22 15.6 Q12 19 2 15.6 Z"/>' },
+    { key: 'accessory', label: 'Accessories', badge: 'badge-coral', svg: '<circle cx="12" cy="12" r="5.2" fill="none" stroke="#fff" stroke-width="1.6"/><rect x="10" y="1.5" width="4" height="4" rx="0.6"/><rect x="10" y="18.5" width="4" height="4" rx="0.6"/>' },
   ];
   const catMap = Object.fromEntries(CATEGORIES.map(c => [c.key, c]));
 

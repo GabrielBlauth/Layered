@@ -76,7 +76,7 @@
     color: var(--text);
     cursor: pointer;
   }
-  .btn.primary { background: var(--panel); color: var(--accent); border: 2px solid var(--accent); }
+  .btn.primary { background: var(--panel); color: var(--text); border: 1px solid var(--border); }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .actions { display: flex; gap: 10px; margin-top: 14px; }
   .actions .btn { flex: 1; }
@@ -394,9 +394,9 @@
   .capture-btn .icon { font-size: 21px; width: 28px; text-align: center; }
   .capture-btn .label { font-size: 14px; font-weight: 600; color: var(--text); }
   .capture-btn .sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-  .capture-btn.primary { background: var(--panel); border: 2px solid var(--accent); }
-  .capture-btn.primary .label, .capture-btn.primary .sub { color: var(--accent); }
-  .capture-btn.primary .sub { opacity: 0.8; }
+  .capture-btn.primary { background: var(--panel); border: 1px solid var(--border); }
+  .capture-btn.primary .label, .capture-btn.primary .sub { color: var(--text); }
+  .capture-btn.primary .sub { color: var(--text-dim); }
 
   #file-camera, #file-gallery { display: none; }
 
