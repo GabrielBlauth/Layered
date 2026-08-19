@@ -1,0 +1,53 @@
+# Layered
+
+A digital closet app: photograph your clothes, and the app builds outfits from what you already own.
+
+## Current status
+
+🚧 UI prototype (front-end only, no persistence yet). Full navigable flow:
+
+- **Home** — My Outfits / Create Outfit / Closet
+- **Closet** — catalog by category (expandable accordion), add items by photo
+- **Create Outfit** — grid of 6 categories, pick real items from your closet to build an outfit
+- **My Outfits** — saved outfits with a thumbnail preview
+
+## Stack
+
+- Vanilla JS / HTML / CSS (no framework, no build step)
+- PWA (`manifest.json`) — installable on mobile
+- Hosting: GitHub Pages
+- Next up: Supabase (auth + storage + database), `@imgly/background-removal` (local background removal via WASM), an LLM-based outfit suggestion engine
+
+## Structure
+
+```
+layered/
+├── index.html          # markup for every screen
+├── css/
+│   └── style.css        # design system + all screen styles
+├── js/
+│   └── app.js            # screen navigation + app state
+├── manifest.json         # PWA config
+└── assets/               # icons, static images
+```
+
+## Running locally
+
+No build step, no server required — just open `index.html` in a browser. To test the phone camera (`capture="environment"` input), serve over HTTPS (GitHub Pages handles this) or run a simple local server:
+
+```bash
+python3 -m http.server 8000
+```
+
+## Closet categories
+
+Tops · Bottoms · Shoes · Outerwear · Headwear (hats/caps) · Accessories (watches, bracelets, necklaces, glasses, belts)
+
+## Roadmap
+
+- [ ] Real persistence (Supabase: item and outfit tables, image storage)
+- [ ] Real background removal (`@imgly/background-removal`, runs in the browser)
+- [ ] Outfit suggestion engine (LLM receives closet metadata, returns combinations)
+- [ ] User authentication
+- [ ] Edit item / edit saved outfit
+- [ ] Filter by season/weather

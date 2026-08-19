@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Layered</title>
+<meta name="theme-color" content="#1c1c1e">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ============ HOME ============ -->
+  <div id="screen-home" class="screen active">
+    <div class="home-eyebrow">Welcome back</div>
+    <h1>Layered</h1>
+    <div class="home-menu">
+      <div class="home-btn hero" data-goto="looks">
+        <div class="icon">✨</div>
+        <div>
+          <div class="label">My Outfits</div>
+          <div class="sub" id="looks-count-sub">No outfits saved yet</div>
+        </div>
+        <div class="arrow">→</div>
+      </div>
+      <div class="home-btn" data-goto="criar-look">
+        <div class="icon">🪄</div>
+        <div>
+          <div class="label">Create Outfit</div>
+          <div class="sub">Put together a new combination</div>
+        </div>
+        <div class="arrow">→</div>
+      </div>
+      <div class="home-btn" data-goto="armario">
+        <div class="icon">🗄️</div>
+        <div>
+          <div class="label">Closet</div>
+          <div class="sub" id="armario-count-sub">No items added yet</div>
+        </div>
+        <div class="arrow">→</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CLOSET ============ -->
+  <div id="screen-armario" class="screen">
+    <div class="top-bar">
+      <span class="back-arrow" data-goto="home">←</span>
+      <h1>Closet</h1>
+    </div>
+    <div class="accordion" id="armario-accordion"></div>
+  </div>
+
+  <!-- ============ CREATE OUTFIT ============ -->
+  <div id="screen-criar-look" class="screen">
+    <div class="top-bar">
+      <span class="back-arrow" data-goto="home">←</span>
+      <h1>Create Outfit</h1>
+    </div>
+    <div class="layout" id="look-layout"></div>
+    <div class="actions">
+      <div class="btn" id="look-reset">Clear</div>
+      <div class="btn primary" id="look-save">Save Outfit</div>
+    </div>
+  </div>
+
+  <!-- ============ PICKER (item selection for a slot) ============ -->
+  <div id="screen-picker" class="screen">
+    <div class="top-bar">
+      <span class="back-arrow" id="picker-back">←</span>
+      <h1 id="picker-title">Category</h1>
+    </div>
+    <div id="picker-body"></div>
+    <div class="actions">
+      <div class="btn" id="picker-cancel">Cancel</div>
+      <div class="btn primary" id="picker-confirm" disabled>Confirm</div>
+    </div>
+  </div>
+
+  <!-- ============ ADD ITEM: capture choice ============ -->
+  <div id="screen-capture" class="screen">
+    <div class="capture-icon">📷</div>
+    <h1>Add item</h1>
+    <p id="capture-subtitle">Photograph the item on a hanger, on the floor,<br>or on a table — we'll handle the rest.</p>
+    <div class="capture-options">
+      <label class="capture-btn primary" for="file-camera">
+        <div class="icon">📸</div>
+        <div><div class="label">Take a photo</div><div class="sub">Use the device camera</div></div>
+      </label>
+      <input type="file" id="file-camera" accept="image/*" capture="environment">
+
+      <label class="capture-btn" for="file-gallery">
+        <div class="icon">🖼️</div>
+        <div><div class="label">Choose from gallery</div><div class="sub">Use an existing photo</div></div>
+      </label>
+      <input type="file" id="file-gallery" accept="image/*">
+    </div>
+  </div>
+
+  <!-- ============ ADD ITEM: processing ============ -->
+  <div id="screen-processing" class="screen">
+    <div class="preview-frame">
+      <img id="processing-img" src="" alt="">
+      <div class="scan-line"></div>
+    </div>
+    <div class="processing-label"><b>Removing the background</b><br>isolating the item automatically</div>
+  </div>
+
+  <!-- ============ ADD ITEM: form ============ -->
+  <div id="screen-form" class="screen">
+    <div class="top-bar">
+      <span class="back-arrow" id="form-back">←</span>
+      <h1>Confirm item</h1>
+    </div>
+    <div class="form-scroll">
+      <div class="result-preview"><img id="form-img" src="" alt=""></div>
+
+      <div class="field">
+        <label>Name / description</label>
+        <input type="text" id="field-name" placeholder="E.g. Plaid flannel shirt">
+      </div>
+
+      <div class="field">
+        <label>Category</label>
+        <div class="chip-row" id="chip-category"></div>
+      </div>
+
+      <div class="field">
+        <label>Main color</label>
+        <div class="chip-row" id="chip-color">
+          <div class="chip color-chip" data-value="Black"><span class="color-dot" style="background:#161616"></span>Black</div>
+          <div class="chip color-chip" data-value="White"><span class="color-dot" style="background:#eeeeee"></span>White</div>
+          <div class="chip color-chip" data-value="Green"><span class="color-dot" style="background:#4a5d43"></span>Green</div>
+          <div class="chip color-chip" data-value="Beige"><span class="color-dot" style="background:#d9c9a3"></span>Beige</div>
+          <div class="chip color-chip" data-value="Red"><span class="color-dot" style="background:#a3453f"></span>Red</div>
+          <div class="chip color-chip" data-value="Blue"><span class="color-dot" style="background:#3f5a78"></span>Blue</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Style</label>
+        <div class="chip-row" id="chip-style">
+          <div class="chip" data-value="Casual">Casual</div>
+          <div class="chip" data-value="Formal">Formal</div>
+          <div class="chip" data-value="Sporty">Sporty</div>
+          <div class="chip" data-value="Night out">Night out</div>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="btn" id="form-cancel">Cancel</div>
+      <div class="btn primary" id="form-save">Save to closet</div>
+    </div>
+  </div>
+
+  <!-- ============ MY OUTFITS ============ -->
+  <div id="screen-looks" class="screen">
+    <div class="top-bar">
+      <span class="back-arrow" data-goto="home">←</span>
+      <h1>My Outfits</h1>
+    </div>
+    <div id="looks-body"></div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
