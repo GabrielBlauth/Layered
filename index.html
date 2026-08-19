@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="css/style.css?v=7">
+<link rel="stylesheet" href="css/style.css?v=9">
 </head>
 <body>
 
@@ -61,11 +61,22 @@
       <span class="back-arrow" data-goto="home">←</span>
       <h1>Create Outfit</h1>
     </div>
+    <div class="btn suggest-btn" id="suggest-looks-btn">✨ Suggest looks</div>
     <div class="layout" id="look-layout"></div>
     <div class="actions">
       <div class="btn" id="look-reset">Clear</div>
       <div class="btn primary" id="look-save">Save Outfit</div>
     </div>
+  </div>
+
+  <!-- ============ SUGGESTIONS ============ -->
+  <div id="screen-suggestions" class="screen">
+    <div class="top-bar">
+      <span class="back-arrow" id="suggestions-back">←</span>
+      <h1>Suggested looks</h1>
+    </div>
+    <div id="suggestions-body"></div>
+    <div class="btn" id="regenerate-suggestions-btn" style="margin-top:4px;">🔄 Generate other looks</div>
   </div>
 
   <!-- ============ PICKER (item selection for a slot) ============ -->
@@ -218,6 +229,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/supabase-client.js"></script>
-  <script src="js/app.js?v=2"></script>
+  <script src="js/app.js?v=4"></script>
 </body>
 </html>

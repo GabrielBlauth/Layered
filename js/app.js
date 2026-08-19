@@ -244,32 +244,39 @@
     renderLookLayout();
   });
 
+  async function saveOutfit(slots) {
+    const chosen = Object.entries(slots);
+    if (chosen.length === 0) return false;
+
+    const { data: outfit, error: outfitError } = await supabaseClient
+      .from('outfits')
+      .insert({ user_id: currentUserId, name: `Outfit ${savedLooks.length + 1}` })
+      .select()
+      .single();
+    if (outfitError) throw outfitError;
+
+    const rows = chosen.map(([category, item]) => ({
+      outfit_id: outfit.id,
+      item_id: item.id,
+      category,
+    }));
+    const { error: itemsError } = await supabaseClient.from('outfit_items').insert(rows);
+    if (itemsError) throw itemsError;
+
+    await fetchLooks();
+    return true;
+  }
+
   document.getElementById('look-save').addEventListener('click', async () => {
-    const chosen = Object.entries(currentLook);
-    if (chosen.length === 0) return;
+    if (Object.keys(currentLook).length === 0) return;
 
     const saveBtn = document.getElementById('look-save');
     const originalText = saveBtn.textContent;
     saveBtn.textContent = 'Saving…';
 
     try {
-      const { data: outfit, error: outfitError } = await supabaseClient
-        .from('outfits')
-        .insert({ user_id: currentUserId, name: `Outfit ${savedLooks.length + 1}` })
-        .select()
-        .single();
-      if (outfitError) throw outfitError;
-
-      const rows = chosen.map(([category, item]) => ({
-        outfit_id: outfit.id,
-        item_id: item.id,
-        category,
-      }));
-      const { error: itemsError } = await supabaseClient.from('outfit_items').insert(rows);
-      if (itemsError) throw itemsError;
-
+      await saveOutfit(currentLook);
       Object.keys(currentLook).forEach(k => delete currentLook[k]);
-      await fetchLooks();
       showScreen('looks');
     } catch (err) {
       console.error('Could not save outfit:', err.message);
@@ -278,6 +285,150 @@
       saveBtn.textContent = originalText;
     }
   });
+
+  /* ---------------- SUGGESTION ENGINE ---------------- */
+  const NEUTRAL_COLORS = ['Black', 'White', 'Beige'];
+
+  function colorScore(colorA, colorB) {
+    if (!colorA || !colorB) return 0.6;
+    if (colorA === colorB) return 1;
+    if (NEUTRAL_COLORS.includes(colorA) || NEUTRAL_COLORS.includes(colorB)) return 0.85;
+    return 0.35;
+  }
+
+  function itemCompatibility(item, anchors) {
+    if (anchors.length === 0) return Math.random();
+    let total = 0;
+    anchors.forEach(a => {
+      let s = colorScore(a.color, item.color);
+      if (a.style && item.style) s += a.style === item.style ? 0.5 : 0.1;
+      total += s;
+    });
+    return total / anchors.length + Math.random() * 0.3; // jitter for variety
+  }
+
+  function generateOutfitCandidate(lockedSlots) {
+    const outfit = { ...lockedSlots };
+    const remaining = CATEGORIES.map(c => c.key)
+      .filter(k => !outfit[k] && wardrobe[k].length > 0)
+      .sort(() => Math.random() - 0.5);
+
+    remaining.forEach(key => {
+      const anchors = Object.values(outfit);
+      const scored = wardrobe[key]
+        .map(it => ({ it, s: itemCompatibility(it, anchors) }))
+        .sort((a, b) => b.s - a.s);
+      const top = scored.slice(0, Math.min(2, scored.length));
+      outfit[key] = top[Math.floor(Math.random() * top.length)].it;
+    });
+
+    return outfit;
+  }
+
+  function candidateKey(candidate) {
+    return CATEGORIES.map(c => candidate[c.key]?.id || '-').join('|');
+  }
+
+  function generateSuggestions(lockedSlots, count = 5) {
+    const results = [];
+    const seen = new Set();
+    let attempts = 0;
+    while (results.length < count && attempts < count * 6) {
+      attempts++;
+      const candidate = generateOutfitCandidate(lockedSlots);
+      const key = candidateKey(candidate);
+      if (Object.keys(candidate).length > Object.keys(lockedSlots).length && !seen.has(key)) {
+        seen.add(key);
+        results.push(candidate);
+      }
+    }
+    return results;
+  }
+
+  let suggestionLockedSlots = {};
+
+  document.getElementById('suggest-looks-btn').addEventListener('click', () => {
+    const totalItems = Object.values(wardrobe).reduce((a, arr) => a + arr.length, 0);
+    if (totalItems < 2) {
+      alert('Add at least a couple of items to your closet first, then come back for suggestions.');
+      return;
+    }
+    suggestionLockedSlots = { ...currentLook };
+    renderSuggestions(generateSuggestions(suggestionLockedSlots, 5));
+    showScreen('suggestions');
+  });
+
+  document.getElementById('suggestions-back').addEventListener('click', () => showScreen('criar-look'));
+
+  document.getElementById('regenerate-suggestions-btn').addEventListener('click', () => {
+    renderSuggestions(generateSuggestions(suggestionLockedSlots, 5));
+  });
+
+  function renderSuggestions(suggestions) {
+    const body = document.getElementById('suggestions-body');
+    if (suggestions.length === 0) {
+      body.innerHTML = `
+        <div class="empty-state">
+          ${badgeHtml({ badge: 'badge-coral', svg: '<path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/>' })}
+          Not enough items yet to build a full suggestion.<br>Add a few more pieces to your closet.
+        </div>
+      `;
+      return;
+    }
+    body.innerHTML = '';
+    suggestions.forEach(candidate => {
+      const card = document.createElement('div');
+      card.className = 'suggestion-card';
+
+      const mini = document.createElement('div');
+      mini.className = 'look-mini';
+      CATEGORIES.forEach(cat => {
+        const it = candidate[cat.key];
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        if (it) cell.innerHTML = `<img src="${it.imgSrc}" alt="">`;
+        mini.appendChild(cell);
+      });
+      card.appendChild(mini);
+
+      const actions = document.createElement('div');
+      actions.className = 'suggestion-actions';
+
+      const editBtn = document.createElement('div');
+      editBtn.className = 'btn';
+      editBtn.textContent = 'Edit';
+      editBtn.addEventListener('click', () => {
+        Object.keys(currentLook).forEach(k => delete currentLook[k]);
+        Object.entries(candidate).forEach(([k, v]) => { currentLook[k] = v; });
+        showScreen('criar-look');
+      });
+
+      const addBtn = document.createElement('div');
+      addBtn.className = 'btn primary';
+      addBtn.textContent = 'Add Outfit';
+      addBtn.addEventListener('click', async () => {
+        if (addBtn.dataset.added) return;
+        const originalText = addBtn.textContent;
+        addBtn.textContent = 'Adding…';
+        try {
+          await saveOutfit(candidate);
+          addBtn.textContent = 'Added ✓';
+          addBtn.dataset.added = 'true';
+          editBtn.style.display = 'none';
+        } catch (err) {
+          console.error('Could not save outfit:', err.message);
+          alert('Could not save this outfit. Please try again.');
+          addBtn.textContent = originalText;
+        }
+      });
+
+      actions.appendChild(editBtn);
+      actions.appendChild(addBtn);
+      card.appendChild(actions);
+
+      body.appendChild(card);
+    });
+  }
 
   /* ---------------- PICKER ---------------- */
   function openPicker(slotKey) {

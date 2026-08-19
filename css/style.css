@@ -290,6 +290,22 @@
 
   /* ================= CREATE OUTFIT ================= */
 
+  .suggest-btn {
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+
+  .suggestion-card {
+    border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--panel);
+    margin-bottom: 12px;
+  }
+  .suggestion-card .look-mini { padding: 10px; }
+  .suggestion-actions {
+    display: flex; gap: 8px;
+    padding: 0 12px 12px;
+  }
+  .suggestion-actions .btn { padding: 10px; font-size: 12px; }
+
   .layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
