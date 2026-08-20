@@ -8,9 +8,18 @@
 <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icon-192-square.png">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="css/style.css?v=11">
+<link rel="stylesheet" href="css/style.css?v=12">
 </head>
 <body>
+
+  <!-- ============ SPLASH SCREEN ============ -->
+  <div id="splash-screen">
+    <img class="splash-icon" src="assets/icon-512.png" alt="Layered">
+    <p class="splash-text">Welcome back to Layered</p>
+    <div class="splash-bar-track">
+      <div class="splash-bar-fill" id="splash-bar-fill"></div>
+    </div>
+  </div>
 
   <!-- ============ HOME ============ -->
   <div id="screen-home" class="screen active">
@@ -44,7 +53,7 @@
       </div>
     </div>
     <div class="account-btn" data-goto="account" id="account-link">
-      <div class="account-btn-circle"><img src="assets/icon-account.png" alt=""></div>
+      <img src="assets/icon-account.png" alt="">
       <span>Account</span>
     </div>
   </div>
@@ -292,6 +301,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/supabase-client.js"></script>
-  <script src="js/app.js?v=6"></script>
+  <script src="js/app.js?v=7"></script>
 </body>
 </html>

@@ -997,10 +997,32 @@
 
   /* ---------------- INIT ---------------- */
   async function init() {
+    const splashStart = Date.now();
+    const minSplashTime = 900; // ms, so the animation doesn't just flash by
+
     await ensureSession();
-    if (!currentUserId) return; // sign-in failed, error already shown
+    if (!currentUserId) {
+      hideSplash();
+      return; // sign-in failed, error already shown
+    }
     await Promise.all([fetchWardrobe(), fetchLooks()]);
     renderHome();
+
+    const elapsed = Date.now() - splashStart;
+    const remaining = Math.max(0, minSplashTime - elapsed);
+    setTimeout(hideSplash, remaining);
+  }
+
+  function hideSplash() {
+    const splash = document.getElementById('splash-screen');
+    const fill = document.getElementById('splash-bar-fill');
+    if (fill) fill.classList.add('complete');
+    if (splash) {
+      setTimeout(() => {
+        splash.classList.add('hidden');
+        setTimeout(() => splash.remove(), 450);
+      }, 200);
+    }
   }
 
   init();
