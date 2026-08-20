@@ -447,7 +447,7 @@
   .field input[type="email"],
   .field input[type="password"] {
     width: 100%; padding: 13px 14px; border-radius: 12px; border: 1px solid var(--border);
-    background: var(--panel); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px;
+    background: var(--panel); color: var(--text); font-family: 'Inter', sans-serif; font-size: 16px;
     -webkit-appearance: none; appearance: none;
   }
   .field input[type="text"]:focus,

@@ -45,6 +45,7 @@
     if (name === 'criar-look') renderLookLayout();
     if (name === 'looks') renderLooks();
     if (name === 'account') renderAccount();
+    if (name === 'outfit-detail') renderOutfitDetail();
   }
 
   document.querySelectorAll('[data-goto]').forEach(el => {
@@ -663,6 +664,8 @@
   });
 
   /* ---------------- MY OUTFITS ---------------- */
+  let currentOutfitDetail = null;
+
   function renderLooks() {
     const body = document.getElementById('looks-body');
     if (savedLooks.length === 0) {
@@ -679,6 +682,7 @@
     savedLooks.forEach(look => {
       const card = document.createElement('div');
       card.className = 'look-card';
+      card.style.cursor = 'pointer';
       const mini = document.createElement('div');
       mini.className = 'look-mini';
       CATEGORIES.forEach(cat => {
@@ -693,11 +697,80 @@
       nameEl.className = 'look-name';
       nameEl.textContent = look.name;
       card.appendChild(nameEl);
+      card.addEventListener('click', () => {
+        currentOutfitDetail = look;
+        showScreen('outfit-detail');
+      });
       grid.appendChild(card);
     });
     body.innerHTML = '';
     body.appendChild(grid);
   }
+
+  function renderOutfitDetail() {
+    if (!currentOutfitDetail) return;
+    document.getElementById('outfit-detail-name').textContent = currentOutfitDetail.name;
+
+    const layout = document.getElementById('outfit-detail-layout');
+    layout.innerHTML = '';
+    CATEGORIES.forEach(cat => {
+      const it = currentOutfitDetail.items[cat.key];
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      slot.style.cursor = 'default';
+      if (it) {
+        slot.innerHTML = `<img src="${it.imgSrc}" alt="${it.name}"><div class="item-label">${it.name}</div>`;
+      } else {
+        slot.style.opacity = '0.4';
+        slot.innerHTML = `${badgeHtml(cat, 'sm')}<div class="slot-label-static">${cat.label}</div>`;
+      }
+      layout.appendChild(slot);
+    });
+  }
+
+  document.getElementById('outfit-rename-btn').addEventListener('click', async () => {
+    if (!currentOutfitDetail) return;
+    const newName = prompt('Rename this outfit', currentOutfitDetail.name);
+    if (!newName || !newName.trim() || newName === currentOutfitDetail.name) return;
+
+    const trimmed = newName.trim();
+    const { error } = await supabaseClient
+      .from('outfits')
+      .update({ name: trimmed })
+      .eq('id', currentOutfitDetail.id);
+
+    if (error) {
+      console.error('Could not rename outfit:', error.message);
+      alert('Could not rename this outfit. Please try again.');
+      return;
+    }
+
+    currentOutfitDetail.name = trimmed;
+    const savedEntry = savedLooks.find(l => l.id === currentOutfitDetail.id);
+    if (savedEntry) savedEntry.name = trimmed;
+    renderOutfitDetail();
+  });
+
+  document.getElementById('outfit-delete-btn').addEventListener('click', async () => {
+    if (!currentOutfitDetail) return;
+    const confirmed = confirm(`Delete "${currentOutfitDetail.name}"? This can't be undone.`);
+    if (!confirmed) return;
+
+    const { error } = await supabaseClient
+      .from('outfits')
+      .delete()
+      .eq('id', currentOutfitDetail.id);
+
+    if (error) {
+      console.error('Could not delete outfit:', error.message);
+      alert('Could not delete this outfit. Please try again.');
+      return;
+    }
+
+    savedLooks = savedLooks.filter(l => l.id !== currentOutfitDetail.id);
+    currentOutfitDetail = null;
+    showScreen('looks');
+  });
 
   /* ---------------- ACCOUNT ---------------- */
   function renderAccount() {

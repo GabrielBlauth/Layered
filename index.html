@@ -6,9 +6,9 @@
 <title>Layered</title>
 <meta name="theme-color" content="#F7F3F2">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
-<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192-square.png">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="css/style.css?v=9">
+<link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body>
 
@@ -195,6 +195,19 @@
     <div id="looks-body"></div>
   </div>
 
+  <!-- ============ OUTFIT DETAIL ============ -->
+  <div id="screen-outfit-detail" class="screen">
+    <div class="top-bar">
+      <span class="back-arrow" data-goto="looks">←</span>
+      <h1 id="outfit-detail-name">Outfit</h1>
+    </div>
+    <div class="layout" id="outfit-detail-layout"></div>
+    <div class="actions">
+      <div class="btn" id="outfit-rename-btn">Edit name</div>
+      <div class="btn" id="outfit-delete-btn" style="color:#D94A4A;">Delete</div>
+    </div>
+  </div>
+
   <!-- ============ ACCOUNT ============ -->
   <div id="screen-account" class="screen">
     <div class="top-bar">
@@ -229,6 +242,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/supabase-client.js"></script>
-  <script src="js/app.js?v=4"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>
