@@ -203,7 +203,12 @@
       items.forEach(it => {
         const tile = document.createElement('div');
         tile.className = 'acc-tile';
+        tile.style.cursor = 'pointer';
         tile.innerHTML = `<img src="${it.imgSrc}" alt="${it.name}"><div class="tile-label">${it.name}</div>`;
+        tile.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openItemDetail(it, cat.key);
+        });
         grid.appendChild(tile);
       });
 
@@ -221,6 +226,112 @@
       acc.appendChild(item);
     });
   }
+
+  /* ---------------- ITEM DETAIL (edit/delete a closet item) ---------------- */
+  let currentItemDetail = null;
+  let currentItemOriginalCategory = null;
+
+  function openItemDetail(item, categoryKey) {
+    currentItemDetail = item;
+    currentItemOriginalCategory = categoryKey;
+
+    document.getElementById('item-detail-img').src = item.imgSrc;
+    document.getElementById('item-detail-name').value = item.name || '';
+
+    const catRow = document.getElementById('item-detail-category');
+    catRow.innerHTML = '';
+    CATEGORIES.forEach(cat => {
+      const chip = document.createElement('div');
+      chip.className = 'chip' + (cat.key === categoryKey ? ' selected' : '');
+      chip.dataset.value = cat.key;
+      chip.textContent = cat.label;
+      chip.addEventListener('click', () => {
+        catRow.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+      });
+      catRow.appendChild(chip);
+    });
+
+    ['item-detail-color', 'item-detail-style'].forEach(id => {
+      const row = document.getElementById(id);
+      const currentValue = id === 'item-detail-color' ? item.color : item.style;
+      row.querySelectorAll('.chip').forEach(chip => {
+        chip.classList.toggle('selected', chip.dataset.value === currentValue);
+      });
+    });
+
+    showScreen('item-detail');
+  }
+
+  ['item-detail-color', 'item-detail-style'].forEach(id => {
+    document.getElementById(id).addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      const row = document.getElementById(id);
+      row.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+    });
+  });
+
+  document.getElementById('item-detail-back').addEventListener('click', () => showScreen('armario'));
+
+  document.getElementById('item-save-btn').addEventListener('click', async () => {
+    if (!currentItemDetail) return;
+
+    const name = document.getElementById('item-detail-name').value.trim() || currentItemDetail.name;
+    const newCategory = document.querySelector('#item-detail-category .selected')?.dataset.value || currentItemOriginalCategory;
+    const color = document.querySelector('#item-detail-color .selected')?.dataset.value || null;
+    const style = document.querySelector('#item-detail-style .selected')?.dataset.value || null;
+
+    const saveBtn = document.getElementById('item-save-btn');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = 'Saving…';
+
+    try {
+      const { error } = await supabaseClient
+        .from('items')
+        .update({ name, category: newCategory, color, style })
+        .eq('id', currentItemDetail.id);
+      if (error) throw error;
+
+      currentItemDetail.name = name;
+      currentItemDetail.color = color;
+      currentItemDetail.style = style;
+
+      if (newCategory !== currentItemOriginalCategory) {
+        wardrobe[currentItemOriginalCategory] = wardrobe[currentItemOriginalCategory].filter(i => i.id !== currentItemDetail.id);
+        wardrobe[newCategory].push(currentItemDetail);
+      }
+
+      showScreen('armario');
+    } catch (err) {
+      console.error('Could not save item:', err.message);
+      alert('Could not save changes. Please try again.');
+    } finally {
+      saveBtn.textContent = originalText;
+    }
+  });
+
+  document.getElementById('item-delete-btn').addEventListener('click', async () => {
+    if (!currentItemDetail) return;
+    const confirmed = confirm(`Delete "${currentItemDetail.name}"? This can't be undone.`);
+    if (!confirmed) return;
+
+    try {
+      if (currentItemDetail.storagePath) {
+        await supabaseClient.storage.from(BUCKET).remove([currentItemDetail.storagePath]);
+      }
+      const { error } = await supabaseClient.from('items').delete().eq('id', currentItemDetail.id);
+      if (error) throw error;
+
+      wardrobe[currentItemOriginalCategory] = wardrobe[currentItemOriginalCategory].filter(i => i.id !== currentItemDetail.id);
+      currentItemDetail = null;
+      showScreen('armario');
+    } catch (err) {
+      console.error('Could not delete item:', err.message);
+      alert('Could not delete this item. Please try again.');
+    }
+  });
 
   /* ---------------- CREATE OUTFIT ---------------- */
   function renderLookLayout() {
@@ -795,36 +906,63 @@
     }
 
     body.innerHTML = `
-      <p class="account-copy">Your closet is currently only saved on this device. Add an email and password to keep it safe and reach it from other devices.</p>
+      <p class="account-copy">Log in to reach the closet and outfits saved under an existing account.</p>
       <div class="field">
         <label>Email</label>
-        <input type="email" id="account-email" placeholder="you@example.com">
+        <input type="email" id="account-login-email" placeholder="you@example.com">
       </div>
       <div class="field">
         <label>Password</label>
-        <input type="password" id="account-password" placeholder="At least 6 characters">
+        <input type="password" id="account-login-password" placeholder="••••••••">
       </div>
-      <p class="account-message" id="account-message"></p>
+      <p class="account-message" id="account-login-message"></p>
     `;
 
-    const createBtn = document.createElement('div');
-    createBtn.className = 'btn primary';
-    createBtn.textContent = 'Create account';
-    createBtn.addEventListener('click', handleCreateAccount);
-    body.appendChild(createBtn);
+    const loginBtn = document.createElement('div');
+    loginBtn.className = 'btn primary';
+    loginBtn.textContent = 'Log in';
+    loginBtn.addEventListener('click', handleAccountLogin);
+    body.appendChild(loginBtn);
 
-    const loginLink = document.createElement('div');
-    loginLink.className = 'account-link';
-    loginLink.style.marginTop = '18px';
-    loginLink.textContent = 'Already have an account? Log in';
-    loginLink.addEventListener('click', () => showScreen('login'));
-    body.appendChild(loginLink);
+    const createLink = document.createElement('div');
+    createLink.className = 'text-link';
+    createLink.style.marginTop = '18px';
+    createLink.textContent = "Don't have an account yet? Create one here";
+    createLink.addEventListener('click', () => showScreen('create-account'));
+    body.appendChild(createLink);
   }
 
-  async function handleCreateAccount() {
-    const email = document.getElementById('account-email').value.trim();
-    const password = document.getElementById('account-password').value;
-    const msg = document.getElementById('account-message');
+  async function handleAccountLogin() {
+    const email = document.getElementById('account-login-email').value.trim();
+    const password = document.getElementById('account-login-password').value;
+    const msg = document.getElementById('account-login-message');
+    msg.textContent = '';
+    msg.classList.remove('error');
+
+    if (!email || !password) {
+      msg.textContent = 'Enter your email and password.';
+      msg.classList.add('error');
+      return;
+    }
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) {
+      msg.textContent = error.message;
+      msg.classList.add('error');
+      return;
+    }
+
+    applySession(data.session);
+    await Promise.all([fetchWardrobe(), fetchLooks()]);
+    showScreen('home');
+  }
+
+  document.getElementById('create-account-back').addEventListener('click', () => showScreen('account'));
+
+  document.getElementById('create-account-submit').addEventListener('click', async () => {
+    const email = document.getElementById('create-account-email').value.trim();
+    const password = document.getElementById('create-account-password').value;
+    const msg = document.getElementById('create-account-message');
     msg.textContent = '';
     msg.classList.remove('error');
 
@@ -843,35 +981,6 @@
 
     msg.classList.remove('error');
     msg.textContent = 'Check your email to confirm the address, then you can log in from any device.';
-  }
-
-  document.getElementById('login-back').addEventListener('click', () => showScreen('account'));
-
-  document.getElementById('login-submit').addEventListener('click', async () => {
-    const email = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value;
-    const msg = document.getElementById('login-message');
-    msg.textContent = '';
-    msg.classList.remove('error');
-
-    if (!email || !password) {
-      msg.textContent = 'Enter your email and password.';
-      msg.classList.add('error');
-      return;
-    }
-
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) {
-      msg.textContent = error.message;
-      msg.classList.add('error');
-      return;
-    }
-
-    applySession(data.session);
-    document.getElementById('login-email').value = '';
-    document.getElementById('login-password').value = '';
-    await Promise.all([fetchWardrobe(), fetchLooks()]);
-    showScreen('home');
   });
 
   async function handleLogout() {

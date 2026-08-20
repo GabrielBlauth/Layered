@@ -55,5 +55,5 @@ Tops · Bottoms · Shoes · Outerwear · Headwear (hats/caps) · Accessories (wa
 - [x] Real background removal (`@imgly/background-removal`, runs in the browser)
 - [x] Outfit suggestion engine (rule-based, using closet metadata — color and style — to generate combinations)
 - [ ] Email/password login (upgrade from anonymous sessions)
-- [x] Edit outfit name / delete outfit (tap an outfit in My Outfits to open its detail view)
+- [x] Edit item / edit saved outfit (tap any closet item or outfit to open its detail view)
 - [ ] Filter by season/weather

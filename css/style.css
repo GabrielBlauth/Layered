@@ -47,11 +47,14 @@
   }
 
   .back-arrow {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 18px;
-    color: var(--text-dim);
     cursor: pointer;
-    width: 22px;
+    width: 30px;
+    display: flex;
+  }
+  .back-arrow img {
+    width: 30px;
+    height: 30px;
+    display: block;
   }
 
   .top-bar h1 {
@@ -156,16 +159,39 @@
   .home-btn .sub { font-size: 11.5px; color: var(--text-dim); margin-top: 2px; }
   .home-btn .arrow { margin-left: auto; color: var(--text-dim); font-size: 16px; }
 
-  .account-link {
-    text-align: center;
-    margin-top: 24px;
-    font-size: 12.5px;
+  .account-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: 28px;
+    cursor: pointer;
+  }
+  .account-btn-circle {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: #FF405C;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .account-btn-circle img { width: 18px; height: 18px; }
+  .account-btn span {
+    font-size: 11.5px;
     font-weight: 600;
     color: var(--text-dim);
+    letter-spacing: 0.02em;
+  }
+  .account-btn:active span { color: var(--text); }
+
+  .text-link {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--accent);
     cursor: pointer;
     letter-spacing: 0.02em;
   }
-  .account-link:active { color: var(--text); }
+  .text-link:active { opacity: 0.7; }
 
   .account-copy {
     font-size: 13px;

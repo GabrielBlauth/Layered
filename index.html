@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icon-192-square.png">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="css/style.css?v=10">
+<link rel="stylesheet" href="css/style.css?v=11">
 </head>
 <body>
 
@@ -43,13 +43,16 @@
         <div class="arrow">→</div>
       </div>
     </div>
-    <div class="account-link" data-goto="account" id="account-link">Account</div>
+    <div class="account-btn" data-goto="account" id="account-link">
+      <div class="account-btn-circle"><img src="assets/icon-account.png" alt=""></div>
+      <span>Account</span>
+    </div>
   </div>
 
   <!-- ============ CLOSET ============ -->
   <div id="screen-armario" class="screen">
     <div class="top-bar">
-      <span class="back-arrow" data-goto="home">←</span>
+      <span class="back-arrow" data-goto="home"><img src="assets/icon-back.png" alt="Back"></span>
       <h1>Closet</h1>
     </div>
     <div class="accordion" id="armario-accordion"></div>
@@ -58,7 +61,7 @@
   <!-- ============ CREATE OUTFIT ============ -->
   <div id="screen-criar-look" class="screen">
     <div class="top-bar">
-      <span class="back-arrow" data-goto="home">←</span>
+      <span class="back-arrow" data-goto="home"><img src="assets/icon-back.png" alt="Back"></span>
       <h1>Create Outfit</h1>
     </div>
     <div class="btn suggest-btn" id="suggest-looks-btn">✨ Suggest looks</div>
@@ -72,7 +75,7 @@
   <!-- ============ SUGGESTIONS ============ -->
   <div id="screen-suggestions" class="screen">
     <div class="top-bar">
-      <span class="back-arrow" id="suggestions-back">←</span>
+      <span class="back-arrow" id="suggestions-back"><img src="assets/icon-back.png" alt="Back"></span>
       <h1>Suggested looks</h1>
     </div>
     <div id="suggestions-body"></div>
@@ -82,7 +85,7 @@
   <!-- ============ PICKER (item selection for a slot) ============ -->
   <div id="screen-picker" class="screen">
     <div class="top-bar">
-      <span class="back-arrow" id="picker-back">←</span>
+      <span class="back-arrow" id="picker-back"><img src="assets/icon-back.png" alt="Back"></span>
       <h1 id="picker-title">Category</h1>
     </div>
     <div id="picker-body"></div>
@@ -142,7 +145,7 @@
   <!-- ============ ADD ITEM: form ============ -->
   <div id="screen-form" class="screen">
     <div class="top-bar">
-      <span class="back-arrow" id="form-back">←</span>
+      <span class="back-arrow" id="form-back"><img src="assets/icon-back.png" alt="Back"></span>
       <h1>Confirm item</h1>
     </div>
     <div class="form-scroll">
@@ -189,7 +192,7 @@
   <!-- ============ MY OUTFITS ============ -->
   <div id="screen-looks" class="screen">
     <div class="top-bar">
-      <span class="back-arrow" data-goto="home">←</span>
+      <span class="back-arrow" data-goto="home"><img src="assets/icon-back.png" alt="Back"></span>
       <h1>My Outfits</h1>
     </div>
     <div id="looks-body"></div>
@@ -198,7 +201,7 @@
   <!-- ============ OUTFIT DETAIL ============ -->
   <div id="screen-outfit-detail" class="screen">
     <div class="top-bar">
-      <span class="back-arrow" data-goto="looks">←</span>
+      <span class="back-arrow" data-goto="looks"><img src="assets/icon-back.png" alt="Back"></span>
       <h1 id="outfit-detail-name">Outfit</h1>
     </div>
     <div class="layout" id="outfit-detail-layout"></div>
@@ -208,40 +211,87 @@
     </div>
   </div>
 
+  <!-- ============ ITEM DETAIL (edit/delete a closet item) ============ -->
+  <div id="screen-item-detail" class="screen">
+    <div class="top-bar">
+      <span class="back-arrow" id="item-detail-back"><img src="assets/icon-back.png" alt="Back"></span>
+      <h1>Edit item</h1>
+    </div>
+    <div class="form-scroll">
+      <div class="result-preview"><img id="item-detail-img" src="" alt=""></div>
+
+      <div class="field">
+        <label>Name / description</label>
+        <input type="text" id="item-detail-name">
+      </div>
+
+      <div class="field">
+        <label>Category</label>
+        <div class="chip-row" id="item-detail-category"></div>
+      </div>
+
+      <div class="field">
+        <label>Main color</label>
+        <div class="chip-row" id="item-detail-color">
+          <div class="chip color-chip" data-value="Black"><span class="color-dot" style="background:#161616"></span>Black</div>
+          <div class="chip color-chip" data-value="White"><span class="color-dot" style="background:#eeeeee"></span>White</div>
+          <div class="chip color-chip" data-value="Green"><span class="color-dot" style="background:#4a5d43"></span>Green</div>
+          <div class="chip color-chip" data-value="Beige"><span class="color-dot" style="background:#d9c9a3"></span>Beige</div>
+          <div class="chip color-chip" data-value="Red"><span class="color-dot" style="background:#a3453f"></span>Red</div>
+          <div class="chip color-chip" data-value="Blue"><span class="color-dot" style="background:#3f5a78"></span>Blue</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Style</label>
+        <div class="chip-row" id="item-detail-style">
+          <div class="chip" data-value="Casual">Casual</div>
+          <div class="chip" data-value="Formal">Formal</div>
+          <div class="chip" data-value="Sporty">Sporty</div>
+          <div class="chip" data-value="Night out">Night out</div>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="btn" id="item-delete-btn" style="color:#D94A4A;">Delete</div>
+      <div class="btn primary" id="item-save-btn">Save changes</div>
+    </div>
+  </div>
+
   <!-- ============ ACCOUNT ============ -->
   <div id="screen-account" class="screen">
     <div class="top-bar">
-      <span class="back-arrow" data-goto="home">←</span>
+      <span class="back-arrow" data-goto="home"><img src="assets/icon-back.png" alt="Back"></span>
       <h1>Account</h1>
     </div>
     <div id="account-body"></div>
   </div>
 
-  <!-- ============ LOG IN ============ -->
-  <div id="screen-login" class="screen">
+  <!-- ============ CREATE ACCOUNT ============ -->
+  <div id="screen-create-account" class="screen">
     <div class="top-bar">
-      <span class="back-arrow" id="login-back">←</span>
-      <h1>Log in</h1>
+      <span class="back-arrow" id="create-account-back"><img src="assets/icon-back.png" alt="Back"></span>
+      <h1>Create account</h1>
     </div>
-    <p class="account-copy">Log in to reach the closet and outfits saved under an existing account. This replaces what's on this device with what's saved to that account.</p>
+    <p class="account-copy">Your closet is currently only saved on this device. Add an email and password to keep it safe and reach it from other devices.</p>
 
     <div class="field">
       <label>Email</label>
-      <input type="email" id="login-email" placeholder="you@example.com">
+      <input type="email" id="create-account-email" placeholder="you@example.com">
     </div>
     <div class="field">
       <label>Password</label>
-      <input type="password" id="login-password" placeholder="••••••••">
+      <input type="password" id="create-account-password" placeholder="At least 6 characters">
     </div>
-    <p class="account-message" id="login-message"></p>
+    <p class="account-message" id="create-account-message"></p>
 
     <div class="actions">
-      <div class="btn primary" id="login-submit" style="flex:1">Log in</div>
+      <div class="btn primary" id="create-account-submit" style="flex:1">Create account</div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/supabase-client.js"></script>
-  <script src="js/app.js?v=5"></script>
+  <script src="js/app.js?v=6"></script>
 </body>
 </html>
